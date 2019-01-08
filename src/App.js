@@ -14,7 +14,15 @@ const AUTH_SERVER = 'https://takon.auth.eu-west-1.amazoncognito.com/'
 
 const CLIENT_ID = 'sgkghjjfsd9gfkg06qe1par1v'
 const REDIRECT_URI = 'https%3A%2F%2Ftakon.me%2F%3Fcallback'
+const LOGOUT_URI = 'https%3A%2F%2Ftakon.me%2F%3Flogout'
 const AUTH_QUERY = `?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}`
+const LOGOUT_ENDPOINT = `logout?client_id=${CLIENT_ID}&logout_uri=${LOGOUT_URI}`
+
+const FETCH_PARAMS = {
+  method: 'GET',
+  mode: 'cors',
+  headers: { 'x-api-key': 'wysAX36RWg5p0EJJdxi9j92DMinJ9Vl04HQEZ10Z' }
+}
 
 class App extends Component {
   constructor (props) {
@@ -23,6 +31,26 @@ class App extends Component {
 
     let hashes = window.location.hash.slice(1).split('&').map(x => x.split('='))
     for (const h of hashes) if (h[0] === 'id_token') this.state.id_token = h[1]
+  }
+
+  componentDidMount () {
+    if (this.state.id_token) {
+      // @ts-ignore
+      fetch('https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/users/me', {
+        ...FETCH_PARAMS,
+        headers: {
+          ...FETCH_PARAMS.headers,
+          'Authorization': `Bearer ${this.state.id_token}`
+        }
+      })
+        .then(x => x.json().then(x => {
+          console.log(x)
+          this.setState({
+            user: x
+          })
+        }))
+        .catch(x => console.error('error', x))
+    }
   }
 
   render () {
@@ -51,15 +79,24 @@ class App extends Component {
                 }
                 {
                   this.state.id_token && (
-                    <span className='text-muted'>{this.state.id_token.slice(0, 12)}</span>
+                    <div className='btn-group'>
+                      <button type='button' className='btn btn-sm btn-link dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+                        {(this.state.user && this.state.user.user) || '🧑'}
+                      </button>
+                      <div className='dropdown-menu dropdown-menu-right'>
+                        <Link className='dropdown-item' to='/create/event'>Create Event</Link>
+                        <Link className='dropdown-item' to='/me/funds'>Add Funds&ensp;<span className='text-muted'>£50.00</span></Link>
+                        <div className='dropdown-divider' />
+                        <a className='dropdown-item' href={AUTH_SERVER + LOGOUT_ENDPOINT}>Log out</a>
+                      </div>
+                    </div>
                   )
                 }
-
               </div>
             </div>
           </header>
           <main>
-            <Route exact path='/' component={Home} />
+            <Route exact path='/' render={props => <Home {...props} app={this} />} />
             <Route path='/events/:id' component={Event} />
           </main>
           { this.state.id_token && (<span>Authorization: Bearer {this.state.id_token}</span>) }
