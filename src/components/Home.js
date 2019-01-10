@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { DateTime } from 'luxon'
+import { DateTime as DT } from 'luxon'
 import { Link } from 'react-router-dom'
 
 class Home extends Component {
@@ -11,15 +11,11 @@ class Home extends Component {
   }
 
   componentDidMount () {
-    fetch('https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/events', {
-      method: 'GET',
-      mode: 'cors',
-      headers: { 'x-api-key': '***REMOVED***' }
-    })
+    fetch('https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/events', this.props.app.FETCH_PARAMS)
       .then(x => x.json().then(x => {
-        console.log(x)
+        // console.log(x)
         this.setState({
-          events: [...this.state.events, ...x.Items]
+          events: [...this.state.events, ...x]
         })
       }))
       .catch(x => console.error('error', x))
@@ -32,7 +28,7 @@ class Home extends Component {
           { this.props.app.state.user && (
             <div className='col-12'>
               <h2 className='display-3 text-center'>
-                Hi, {this.props.app.state.user.user}.
+                Hi, {this.props.app.state.user.username}.
               </h2>
               <h3 className='text-center'>What next?</h3>
             </div>
@@ -53,10 +49,11 @@ class Home extends Component {
                 <div className='card flex-md-row mb-4 shadow-sm h-md-250'>
                   <div className='card-body d-flex flex-column align-items-start'>
                     <h2 className='mb-0'>{(ev.title && ev.title.toTitleCase()) || '???'}</h2>
-                    <h5 className='mb-2'>{(ev.subtitle && ev.subtitle.toTitleCase()) || '???'}</h5>
+                    {ev.subtitle && (<h5 className='mb-2'>{ev.subtitle.toTitleCase() || ''}</h5>)}
                     <p className='card-text mb-auto'>
-                      <span className='text-muted mr-3'>{ev.location && ev.location.toTitleCase()}</span>
-                      <span className='text-muted mr-3'>{ev.datetime && DateTime.fromSeconds(ev.datetime).toLocaleString(DateTime.DATETIME_MED)}</span>
+                      <span className='text-muted mr-3 no-wrap'>{ev.location && ev.location.toTitleCase()}</span>
+                      <wbr />
+                      <span className='text-muted mr-3 no-wrap'>{ev.datetime && DT.fromSeconds(ev.datetime).toLocaleString(DT.DATETIME_MED)}</span>
                     </p>
                     <span>
                       <span className='text-success mr-3'>BID <strong>£50</strong></span>

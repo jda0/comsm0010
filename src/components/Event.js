@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { DateTime } from 'luxon'
+import { DateTime as DT } from 'luxon'
 import { Link } from 'react-router-dom'
 
 class Event extends Component {
@@ -21,9 +21,9 @@ class Event extends Component {
       headers: { 'x-api-key': '***REMOVED***' }
     })
       .then(x => x.json().then(x => {
-        console.log(x)
+        // console.log(x)
         this.setState({
-          event: x.Item,
+          event: x,
           askAmount: 50,
           bidAmount: 50
         })
@@ -40,14 +40,15 @@ class Event extends Component {
       <div>
         <div className='jumbotron mb-4 mt-4 p-3 p-md-5 text-white rounded bg-dark'>
           { this.state.event && (
-            <div className='col-md-12'>
+            <div className='col-md-12 pb-1'>
               <h1 className='display-3 my-0'>{(this.state.event.title && this.state.event.title.toTitleCase()) || '???'}</h1>
-              <h2 className='mb-5'>{(this.state.event.subtitle && this.state.event.subtitle.toTitleCase()) || '???'}</h2>
-              <p className='lead mb-1'>
-                <span className='mr-3'>{this.state.event.location && this.state.event.location.toTitleCase()}</span>
-                <span className='mr-3'>{this.state.event.datetime && DateTime.fromSeconds(this.state.event.datetime).toLocaleString(DateTime.DATETIME_MED)}</span>
+              {this.state.event.subtitle && (<h2 className='mb-0'>{this.state.event.subtitle.toTitleCase() || ''}</h2>)}
+              <p className='lead mb-1 mt-5'>
+                <span className='mr-3 no-wrap'>{this.state.event.location && this.state.event.location.toTitleCase()}</span>
+                <wbr />
+                <span className='no-wrap'>{this.state.event.datetime && DT.fromSeconds(this.state.event.datetime).toLocaleString(DT.DATETIME_MED)}</span>
               </p>
-              <p className='mt-0 mb-2'>{this.state.event.description}</p>
+              {(this.state.event.description && <p className='mt-0 mb-1'>{this.state.event.description}</p>)}
             </div>
           )}
           { !this.state.event && (
@@ -60,7 +61,7 @@ class Event extends Component {
           <div className='col-md-6'>
             { this.state.event && (
               <div className='card mb-4 shadow-sm'>
-                <Link to={`/events/${this.state.event.id}`} className='td-n'>
+                <Link to={`/events/${this.state.event.id}/ask`} className='td-n'>
                   <div className='text-danger card-body d-flex flex-column align-items-center justify-content-center'>
                     <h2 className='display-4 my-0'>Ask</h2>
                     <span>Sell Now <em>for up to</em> £50</span>
@@ -83,7 +84,7 @@ class Event extends Component {
           <div className='col-md-6'>
             { this.state.event && (
               <div className='card mb-4 shadow-sm'>
-                <Link to={`/events/${this.state.event.id}`} className='td-n'>
+                <Link to={`/events/${this.state.event.id}/bid`} className='td-n'>
                   <div className='text-success card-body d-flex flex-column align-items-center justify-content-center'>
                     <h2 className='display-4 my-0'>Bid</h2>
                     <span>Buy Now <em>from</em> £59</span>

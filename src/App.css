@@ -144,6 +144,10 @@ a.td-n {
   animation: sk-scaleout 1.0s infinite ease-in-out;
 }
 
+.spinner.dark {
+  background-color: #333;
+}
+
 @-webkit-keyframes sk-scaleout {
   0% { -webkit-transform: scale(0) }
   100% {
@@ -161,4 +165,28 @@ a.td-n {
     transform: scale(1.0);
     opacity: 0;
   }
+}
+
+.no-gutters {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.no-gutters > .col,
+.no-gutters > [class*="col-"] {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+input[type='number'] {
+  -moz-appearance:textfield;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.no-wrap {
+  white-space: nowrap;
 }

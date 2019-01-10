@@ -5,6 +5,7 @@
   "dependencies": {
     "luxon": "^1.9.0",
     "react": "^16.7.0",
+    "react-cookie": "^3.0.8",
     "react-dom": "^16.7.0",
     "react-redux": "^6.0.0",
     "react-router": "^4.3.1",
@@ -28,6 +29,8 @@
     "not op_mini all"
   ],
   "standard": {
-    "globals": ["fetch"]
+    "globals": [
+      "fetch"
+    ]
   }
 }
