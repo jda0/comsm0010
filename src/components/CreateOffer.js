@@ -90,9 +90,9 @@ class CreateOffer extends Component {
           <form onSubmit={this.handleSubmit}>
             <div className='form-group row'>
               <label className='col-sm-3 col-form-label'>Event</label>
-              <div className='col-sm-auto mb-3'>
-                <div className='card flex-md-row shadow-sm'>
-                  {(this.state.event && (
+              {(this.state.event && (
+                <div className='col-sm-auto mb-3'>
+                  <div className='card flex-md-row shadow-sm'>
                     <div className='card-body d-flex flex-column align-items-start'>
                       <h3 className='mb-0'>{(this.state.event.title && this.state.event.title.toTitleCase()) || '???'}</h3>
                       {this.state.event.subtitle && (<h5 className='mb-2'>{this.state.event.subtitle.toTitleCase() || ''}</h5>)}
@@ -102,9 +102,9 @@ class CreateOffer extends Component {
                         <span className='text-muted no-wrap'>{this.state.event.datetime && DT.fromSeconds(this.state.event.datetime).toLocaleString(DT.DATETIME_MED)}</span>
                       </p>
                     </div>
-                  )) || (<div className='spinner' />)}
+                  </div>
                 </div>
-              </div>
+              )) || (<div className='col-sm-9 mb-3'><div className='spinner' /></div>)}
             </div>
             {(this.state.reserved && !this.state.reserved.id && (
               <div className='row'>

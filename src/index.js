@@ -5,7 +5,8 @@ import './index.css'
 import App from './App'
 import * as serviceWorker from './serviceWorker'
 
-String.prototype.toTitleCase = function () { return this.toLowerCase().replace(/\b(\s\w|^\w)/g, function (txt) { return txt.toUpperCase() }) } // eslint-disable-line no-extend-native
+// @ts-ignore
+String.prototype.toTitleCase = function () { return this.toLowerCase().replace(/(\s\w|^\w)/g, function (txt) { return txt.toUpperCase() }) } // eslint-disable-line no-extend-native
 
 ReactDOM.render((
   <CookiesProvider>
