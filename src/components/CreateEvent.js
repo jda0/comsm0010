@@ -48,7 +48,7 @@ class CreateEvent extends Component {
       return
     }
 
-    date.plus({ hours: time.hour, minutes: time.minute })
+    date = date.plus({ hours: time.hour, minutes: time.minute })
 
     if (this.state.tcsCheck) {
       fetch(`https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/events`, {

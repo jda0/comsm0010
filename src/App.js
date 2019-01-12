@@ -50,6 +50,14 @@ class App extends Component {
 
   componentDidMount () {
     if (this.state.id_token) {
+      if (window.location.search === '?logout') {
+        this.props.cookies.remove('id_token', {
+          path: '/'
+        })
+        this.setState({ id_token: undefined })
+        return
+      }
+
       // @ts-ignore
       fetch('https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/users/me', {
         ...this.FETCH_PARAMS,
@@ -80,16 +88,22 @@ class App extends Component {
   render () {
     return (
       <Router>
-        <div className='App container'>
-          <Route render={props => <Header {...props} app={this} />} />
-          <main>
-            <Route exact path='/' render={props => <Home {...props} app={this} />} />
-            <Route exact path='/topup' render={props => <Topup {...props} app={this} />} />
-            <Route exact path='/create/event' render={props => <CreateEvent {...props} app={this} />} />
-            <Route exact path='/events/:id' component={Event} />
-            <Route exact path='/events/:id/ask' render={props => <CreateOffer {...props} app={this} type='ask' />} />
-            <Route exact path='/events/:id/bid' render={props => <CreateOffer {...props} app={this} type='bid' />} />
-          </main>
+        <div className='App d-flex flex-column justify-content-between'>
+          <div className='container'>
+            <Route render={props => <Header {...props} app={this} />} />
+            <main>
+              <Route exact path='/' render={props => <Home {...props} app={this} />} />
+              <Route exact path='/topup' render={props => <Topup {...props} app={this} />} />
+              <Route exact path='/create/event' render={props => <CreateEvent {...props} app={this} />} />
+              <Route exact path='/events/:id' component={Event} />
+              <Route exact path='/events/:id/ask' render={props => <CreateOffer {...props} app={this} type='ask' />} />
+              <Route exact path='/events/:id/bid' render={props => <CreateOffer {...props} app={this} type='bid' />} />
+            </main>
+          </div>
+          <footer className='blog-footer mt-5'>
+            <p>This app is a mockup. No items listed are for sale. No liability will be taken, or refunds made, for accidental purchases.</p>
+            &copy; 2019&ensp;<a href='//mrvs.city'>mrvs.city</a> &amp; <a href='//bit.ly/snashme'>snash.me</a>
+          </footer>
         </div>
       </Router>
     )
