@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import { Redirect } from 'react-router'
+import { DateTime as DT } from 'luxon'
 
 class CreateEvent extends Component {
   constructor (props) {
@@ -14,35 +16,84 @@ class CreateEvent extends Component {
   }
 
   handleSubmit (event) {
-    // if (this.state.tcsCheck) {
-    //   fetch(`https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/events`, {
-    //     ...this.props.app.FETCH_PARAMS,
-    //     method: 'POST',
-    //     headers: {
-    //       ...this.props.app.FETCH_PARAMS.headers,
-    //       'Authorization': `Bearer ${this.props.app.state.id_token}`
-    //     }
-    //   })
-    //     .then(x => x.json().then(x => {
-    //       console.log(x)
-    //       this.setState({
-    //         event: x.Item,
-    //         askAmount: 50,
-    //         bidAmount: 50
-    //       })
-    //     }))
-    //     .catch(x => console.error('error', x))
-    // }
-
     event.preventDefault()
+
+    let date = DT.fromISO(this.state.dateInput)
+    let time = DT.fromISO(this.state.timeInput)
+    let tickets = parseInt(this.state.ticketsInput, 10)
+    let price = parseFloat(this.state.priceInput, 2)
+
+    if (typeof this.state.titleInput !== 'string' || this.state.titleInput === '') {
+      document.getElementById('titleInput').setCustomValidity('')
+      return
+    }
+    if (typeof this.state.locationInput !== 'string' || this.state.locationInput === '') {
+      document.getElementById('locationInput').setCustomValidity('')
+      return
+    }
+    if (!date.isValid) {
+      document.getElementById('dateInput').setCustomValidity('Invalid ISO date.')
+      return
+    }
+    if (!time.isValid || +(time.startOf('day')) !== +(DT.local().startOf('day'))) {
+      document.getElementById('timeInput').setCustomValidity('Invalid time.')
+      return
+    }
+    if (isNaN(tickets)) {
+      document.getElementById('ticketsInput').setCustomValidity('')
+      return
+    }
+    if (isNaN(price)) {
+      document.getElementById('priceInput').setCustomValidity('')
+      return
+    }
+
+    date.plus({ hours: time.hour, minutes: time.minute })
+
+    if (this.state.tcsCheck) {
+      fetch(`https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/events`, {
+        ...this.props.app.FETCH_PARAMS,
+        method: 'POST',
+        headers: {
+          ...this.props.app.FETCH_PARAMS.headers,
+          'Authorization': `Bearer ${this.props.app.state.id_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          datetime: date.toSeconds(),
+          title: this.state.titleInput,
+          subtitle: this.state.subtitleInput || '',
+          description: this.state.descriptionInput || '',
+          location: this.state.locationInput,
+          admins: [],
+          maxOrderQty: 1
+        })
+      })
+        .then(x => x.json())
+        .then(x => {
+          console.log(x)
+          if (x.errorMessage) {
+            this.setState({ error: true })
+            return
+          }
+
+          this.setState({
+            event: x.id
+          })
+        })
+        .catch(x => console.error('error', x))
+    }
   }
 
   render () {
     return (
       <div>
         <h1 className='text-center my-5'>Create an Event</h1>
-        { (!this.props.app.state.user && (
-          <div className='alert alert-secondary'>
+        { (this.state.event) && (
+          <Redirect push to={`/events/${this.state.event}`} />
+        ) }
+        { ((!this.props.app.state.user) && (
+          <div className='alert alert-secondary mb-2'>
             You need to <a href={this.props.app.AUTH_SERVER + 'login' + this.props.app.AUTH_QUERY + `&state=${this.props.location.pathname}`}>Login</a> or <a href={this.props.app.AUTH_SERVER + 'signup' + this.props.app.AUTH_QUERY + `&state=${this.props.location.pathname}`}>Sign up</a> to create an event.
           </div>
         )) || (
@@ -56,7 +107,7 @@ class CreateEvent extends Component {
             <div className='form-group row'>
               <label htmlFor='subtitleInput' className='col-sm-3 col-form-label'>Subtitle/Tour</label>
               <div className='col-sm-9 mb-1'>
-                <input type='text' className='form-control' id='subtitleInput' placeholder='Hunting High and Low' value={this.state.subtitleInput || ''} onChange={this.handleChange} required />
+                <input type='text' className='form-control' id='subtitleInput' placeholder='Hunting High and Low' value={this.state.subtitleInput || ''} onChange={this.handleChange} />
               </div>
             </div>
             <div className='form-group row'>
@@ -119,7 +170,15 @@ class CreateEvent extends Component {
                 </label>
               </div>
             </div>
+
             <div className='form-group row justify-content-end'>
+              { this.state.error && (
+                <div className='offset-sm-3 col'>
+                  <div className='alert alert-danger'>
+                    There was an error.
+                  </div>
+                </div>
+              )}
               <div className='col-auto'>
                 <button type='submit' className='btn btn-primary'>Create</button>
               </div>
