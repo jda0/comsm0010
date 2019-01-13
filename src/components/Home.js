@@ -67,7 +67,7 @@ class Home extends Component {
                   <div className='card-body d-flex flex-column align-items-start'>
                     <h2 className='mb-0'>{(ev.title && ev.title.toTitleCase()) || '???'}</h2>
                     {ev.subtitle && (<h5 className='mb-2'>{ev.subtitle.toTitleCase() || ''}</h5>)}
-                    <p className='card-text mb-5'>
+                    <p className='card-text mb-auto'>
                       <span className='text-muted mr-3 no-wrap'>{ev.location && ev.location.toTitleCase()}</span>
                       <wbr />
                       <span className='text-muted mr-3 no-wrap'>{ev.datetime && DT.fromSeconds(ev.datetime).toLocaleString(DT.DATETIME_MED)}</span>
