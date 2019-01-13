@@ -15,19 +15,26 @@ class Event extends Component {
   }
 
   componentDidMount () {
-    fetch(`https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/events/${this.state.id}`, {
-      method: 'GET',
-      mode: 'cors',
-      headers: { 'x-api-key': 'wysAX36RWg5p0EJJdxi9j92DMinJ9Vl04HQEZ10Z' }
-    })
-      .then(x => x.json().then(x => {
+    fetch(`${this.props.app.API_URL}/events/${this.state.id}`, this.props.app.FETCH_PARAMS)
+      .then(x => x.json())
+      .then(event => {
         // console.log(x)
         this.setState({
-          event: x,
-          askAmount: 50,
-          bidAmount: 50
+          event
         })
-      }))
+      })
+      .then(() => fetch(`${this.props.app.API_URL}/events/${this.state.event.id}/offers`, this.props.app.FETCH_PARAMS))
+      .then(x => x.json())
+      .then(offers => {
+        const amounts = Object.keys(offers).map(parseFloat).sort((a, b) => a - b)
+        const asks = amounts.filter(x => x > 0).reduce((a, b) => { return { ...a, [b]: offers[b] } }, {})
+        const bids = amounts.filter(x => x < 0).reduce((a, b) => { return { ...a, [b]: offers[b] } }, {})
+
+        this.setState({
+          asks,
+          bids
+        })
+      })
       .catch(x => console.error('error', x))
   }
 
@@ -64,13 +71,9 @@ class Event extends Component {
                 <Link to={`/events/${this.state.event.id}/ask`} className='td-n'>
                   <div className='text-danger card-body d-flex flex-column align-items-center justify-content-center'>
                     <h2 className='display-4 my-0'>Ask</h2>
-                    <span>Sell Now <em>for up to</em> £50</span>
+                    {(!!this.state.bids && !!(Object.keys(this.state.bids)[0]) && (<span>Sell Now <em>for up to</em> £{-(Object.keys(this.state.bids)[0] * 0.01).toFixed(2)}</span>)) || (<span>Make an offer</span>)}
                   </div>
                 </Link>
-                <ul className='list-group list-group-flush'>
-                  <li className='list-group-item'> a
-                  </li>
-                </ul>
               </div>
             )}
             { !this.state.event && (
@@ -87,7 +90,7 @@ class Event extends Component {
                 <Link to={`/events/${this.state.event.id}/bid`} className='td-n'>
                   <div className='text-success card-body d-flex flex-column align-items-center justify-content-center'>
                     <h2 className='display-4 my-0'>Bid</h2>
-                    <span>Buy Now <em>from</em> £59</span>
+                    {(!!this.state.bids && !!(Object.keys(this.state.asks)[0]) && (<span>Buy Now <em>from</em> £{(Object.keys(this.state.asks)[0] * 0.01).toFixed(2)}</span>)) || (<span>Make an offer</span>)}
                   </div>
                 </Link>
               </div>
@@ -97,6 +100,48 @@ class Event extends Component {
                 <div className='card-body d-flex flex-column align-items-center justify-content-center'>
                   <div className='spinner' />
                 </div>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className='row mb-2'>
+          <div className='col-md-6'>
+          { !!this.state.bids && !!(Object.keys(this.state.bids)[0]) && (
+              <div className='card mb-4 shadow-sm'>
+                <ul className='list-group list-group-flush'>
+                  <li className='list-group-item text-center d-flex justify-content-around'>
+                    <h5 className='mb-0'>Current Bids</h5>
+                  </li>
+                  { Object.keys(this.state.bids)
+                      .sort((a, b) => a - b)
+                      .map(x => (
+                        <li className='list-group-item text-center d-flex justify-content-around'>
+                          <span>£{-(x * 0.01).toFixed(2)}</span>
+                          <span>{this.state.bids[x]}</span>
+                        </li>
+                      ))
+                  }
+                </ul>
+              </div>
+            )}
+          </div>
+          <div className='col-md-6'>
+            { !!this.state.asks && !!(Object.keys(this.state.asks)[0]) && (
+              <div className='card mb-4 shadow-sm'>
+                <ul className='list-group list-group-flush'>
+                  <li className='d-md-none list-group-item text-center d-flex justify-content-around'>
+                    <h5 className='mb-0'>Current Asks</h5>
+                  </li>
+                  { Object.keys(this.state.asks)
+                      .sort((a, b) => a - b)
+                      .map(x => (
+                        <li className='list-group-item d-flex justify-content-around'>
+                          <span>£{(x * 0.01).toFixed(2)}</span>
+                          <span>{this.state.asks[x]}</span>
+                        </li>
+                      ))
+                  }
+                </ul>
               </div>
             )}
           </div>

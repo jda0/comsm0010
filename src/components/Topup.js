@@ -21,13 +21,14 @@ class Topup extends Component {
       document.getElementById('priceInput').setCustomValidity('')
       return
     }
+    amount = Math.floor(amount * 100)
 
     if (this.state.tcsCheck) {
       this.setState({ processing: true, error: undefined, success: undefined })
       
       this.props.stripe.createToken({ name: 'Takon.me Account Topup' })
         .then(({ token }) => {
-          fetch(`https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/funds`, {
+          fetch(`${this.props.app.API_URL}/funds`, {
             ...this.props.app.FETCH_PARAMS,
             method: 'POST',
             headers: {
@@ -48,7 +49,15 @@ class Topup extends Component {
             .then(x => x.json().then(x => {
               console.log(x)
               if (x.errorMessage) this.setState({ processing: undefined, error: true })
-              else this.setState({ processing: undefined, complete: true })
+              else {
+                this.props.app.setState({
+                  user: {
+                    ...this.props.app.state.user,
+                    funds: x.funds
+                  }
+                })
+                this.setState({ processing: undefined, complete: true })
+              }
             }))
             .catch(x => {
               this.setState({ processing: undefined, error: true })
@@ -77,13 +86,13 @@ class Topup extends Component {
             <div className='form-group row'>
               <label className='col-sm-3 col-form-label'>Your Balance</label>
               <div className='col mb-4'>
-                <h3>£{this.props.app.state.user.funds.toFixed(2)}</h3>
+                <h3>£{(this.props.app.state.user.funds * .01).toFixed(2)}</h3>
               </div>
-              {(this.props.app.state.user.funds > 0) && (
+              {/* {(this.props.app.state.user.funds > 0) && (
                 <div className='col-auto mb-2'>
                   <button className='btn btn-secondary'>Withdraw</button>
                 </div>
-              )}
+              )} */}
             </div>
             <div className='form-group row'>
               <label htmlFor='priceInput' className='col-sm-3 col-form-label'>Top up Amount</label>
