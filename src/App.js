@@ -21,6 +21,7 @@ class App extends Component {
     }
 
     this.AUTH_SERVER = 'https://takon.auth.eu-west-1.amazoncognito.com/'
+    this.API_URL = 'https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test'
     this.CLIENT_ID = '***REMOVED***'
     this.REDIRECT_URI = 'https%3A%2F%2Ftakon.me%2F%3Fcallback'
     this.LOGOUT_URI = 'https%3A%2F%2Ftakon.me%2F%3Flogout'
@@ -29,7 +30,10 @@ class App extends Component {
     this.FETCH_PARAMS = {
       method: 'GET',
       mode: 'cors',
-      headers: { 'x-api-key': '***REMOVED***' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-key': '***REMOVED***' 
+      }
     }
 
     let hashes = window.location.hash.slice(1).split('&').map(x => x.split('='))
@@ -61,7 +65,7 @@ class App extends Component {
 
       if (!this.props.cookies.get('id_token') || !this.state.user) {
       // @ts-ignore
-        fetch('https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/users/me', {
+        fetch(`${this.API_URL}/users/me`, {
           ...this.FETCH_PARAMS,
           headers: {
             ...this.FETCH_PARAMS.headers,
@@ -98,13 +102,16 @@ class App extends Component {
               <Route exact path='/' render={props => <Home {...props} app={this} />} />
               <Route exact path='/topup' render={props => <Elements><Topup {...props} app={this} /></Elements>} />
               <Route exact path='/create/event' render={props => <CreateEvent {...props} app={this} />} />
-              <Route exact path='/events/:id' component={Event} />
+              <Route exact path='/events/:id' render={props => <Event {...props} app={this} />} />
               <Route exact path='/events/:id/ask' render={props => <CreateOffer {...props} app={this} type='ask' />} />
               <Route exact path='/events/:id/bid' render={props => <CreateOffer {...props} app={this} type='bid' />} />
             </main>
           </div>
           <footer className='blog-footer mt-5'>
-            <p>This app is a mockup. No items listed are for sale. No liability will be taken, or refunds made, for accidental purchases.</p>
+            <p>
+              This app is a mockup. No items listed are for sale. No liability will be taken, or refunds made, for accidental purchases.<br />
+              Stripe is configured in Test mode and no payments will be taken.
+            </p>
             &copy; 2019&ensp;<a href='//mrvs.city'>mrvs.city</a> &amp; <a href='//bit.ly/snashme'>snash.me</a>
           </footer>
         </div>

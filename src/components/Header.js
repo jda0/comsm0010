@@ -43,7 +43,7 @@ class Header extends Component {
                     {this.props.app.state.user && (
                       <div>
                         <Link className='dropdown-item' to='/create/event'>Create Event</Link>
-                        <Link className='dropdown-item' to='/topup'>Add Funds&ensp;<span className='text-muted'>£{this.props.app.state.user.funds.toFixed(2)}</span></Link>
+                        <Link className='dropdown-item' to='/topup'>Add Funds&ensp;<span className='text-muted'>£{(this.props.app.state.user.funds * .01).toFixed(2)}</span></Link>
                         <div className='dropdown-divider' />
                       </div>
                     )}

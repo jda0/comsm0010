@@ -13,7 +13,7 @@ class CreateOffer extends Component {
   }
 
   componentDidMount () {
-    fetch(`https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/events/${this.state.eventid}`, this.props.app.FETCH_PARAMS)
+    fetch(`${this.props.app.API_URL}/events/${this.state.eventid}`, this.props.app.FETCH_PARAMS)
       .then(x => x.json().then(x => {
         // console.log(x)
         this.setState({
@@ -56,7 +56,7 @@ class CreateOffer extends Component {
 
   handleSubmit (event) {
     // if (this.state.tcsCheck) {
-    //   fetch(`https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/events`, {
+    //   fetch(`${this.props.app.API_URL}/events`, {
     //     ...this.props.app.FETCH_PARAMS,
     //     method: 'POST',
     //     headers: {

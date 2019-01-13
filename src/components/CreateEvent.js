@@ -59,7 +59,7 @@ class CreateEvent extends Component {
     if (this.state.tcsCheck) {
       this.setState({ processing: true })
 
-      fetch(`https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/events`, {
+      fetch(`${this.props.app.API_URL}/test/events`, {
         ...this.props.app.FETCH_PARAMS,
         method: 'POST',
         headers: {
@@ -78,8 +78,7 @@ class CreateEvent extends Component {
           maxOrderQty: 1
         })
       })
-        .then(x => x.json())
-        .then(x => {
+        .then(x => x.json()).then(x => {
           console.log(x)
           if (x.errorMessage) {
             this.setState({ processing: undefined, error: true })
