@@ -59,7 +59,7 @@ class CreateEvent extends Component {
     if (this.state.tcsCheck) {
       this.setState({ processing: true })
 
-      fetch(`${this.props.app.API_URL}/test/events`, {
+      fetch(`${this.props.app.API_URL}/events`, {
         ...this.props.app.FETCH_PARAMS,
         method: 'POST',
         headers: {
