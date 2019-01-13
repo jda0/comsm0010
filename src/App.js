@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { withCookies } from 'react-cookie'
+import { Elements } from 'react-stripe-elements'
 import {
   BrowserRouter as Router,
   Route
@@ -58,30 +59,32 @@ class App extends Component {
         return
       }
 
+      if (!this.props.cookies.get('id_token') || !this.state.user) {
       // @ts-ignore
-      fetch('https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/users/me', {
-        ...this.FETCH_PARAMS,
-        headers: {
-          ...this.FETCH_PARAMS.headers,
-          'Authorization': `Bearer ${this.state.id_token}`
-        }
-      })
-        .then(x => x.json().then(x => {
-          console.log(x)
-          this.setState({
-            user: {
-              funds: 0,
-              ...x
-            }
-          })
-        }))
-        .catch(x => {
-          console.error('error', x)
-          this.props.cookies.remove('id_token', {
-            path: '/'
-          })
-          this.setState({ id_token: undefined })
+        fetch('https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/users/me', {
+          ...this.FETCH_PARAMS,
+          headers: {
+            ...this.FETCH_PARAMS.headers,
+            'Authorization': `Bearer ${this.state.id_token}`
+          }
         })
+          .then(x => x.json().then(x => {
+            console.log(x)
+            this.setState({
+              user: {
+                funds: 0,
+                ...x
+              }
+            })
+          }))
+          .catch(x => {
+            console.error('error', x)
+            this.props.cookies.remove('id_token', {
+              path: '/'
+            })
+            this.setState({ id_token: undefined })
+          })
+      }
     }
   }
 
@@ -93,7 +96,7 @@ class App extends Component {
             <Route render={props => <Header {...props} app={this} />} />
             <main>
               <Route exact path='/' render={props => <Home {...props} app={this} />} />
-              <Route exact path='/topup' render={props => <Topup {...props} app={this} />} />
+              <Route exact path='/topup' render={props => <Elements><Topup {...props} app={this} /></Elements>} />
               <Route exact path='/create/event' render={props => <CreateEvent {...props} app={this} />} />
               <Route exact path='/events/:id' component={Event} />
               <Route exact path='/events/:id/ask' render={props => <CreateOffer {...props} app={this} type='ask' />} />

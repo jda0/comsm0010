@@ -190,3 +190,7 @@ input::-webkit-inner-spin-button {
 .no-wrap {
   white-space: nowrap;
 }
+
+.form-control.StripeElement {
+  padding-top: .5625em;
+}

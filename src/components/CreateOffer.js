@@ -106,7 +106,7 @@ class CreateOffer extends Component {
                 </div>
               )) || (<div className='col-sm-9 mb-3'><div className='spinner' /></div>)}
             </div>
-            {(this.state.reserved && !this.state.reserved.id && (
+            {((this.state.processing || (this.state.reserved && !this.state.reserved.id)) && (
               <div className='row'>
                 <div className='col-sm-9 offset-sm-3'>
                   <div className='spinner dark' />
