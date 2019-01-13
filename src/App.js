@@ -3,7 +3,8 @@ import { withCookies } from 'react-cookie'
 import { Elements } from 'react-stripe-elements'
 import {
   BrowserRouter as Router,
-  Route
+  Route,
+  Switch
 } from 'react-router-dom'
 import './App.css'
 import Header from './components/Header'
@@ -12,6 +13,7 @@ import CreateEvent from './components/CreateEvent'
 import CreateOffer from './components/CreateOffer'
 import Event from './components/Event'
 import Topup from './components/Topup'
+import NotFound from './components/NotFound'
 
 class App extends Component {
   constructor (props) {
@@ -99,12 +101,15 @@ class App extends Component {
           <div className='container'>
             <Route render={props => <Header {...props} app={this} />} />
             <main>
-              <Route exact path='/' render={props => <Home {...props} app={this} />} />
-              <Route exact path='/topup' render={props => <Elements><Topup {...props} app={this} /></Elements>} />
-              <Route exact path='/create/event' render={props => <CreateEvent {...props} app={this} />} />
-              <Route exact path='/events/:id' render={props => <Event {...props} app={this} />} />
-              <Route exact path='/events/:id/ask' render={props => <CreateOffer {...props} app={this} type='ask' />} />
-              <Route exact path='/events/:id/bid' render={props => <CreateOffer {...props} app={this} type='bid' />} />
+              <Switch>
+                <Route exact path='/' render={props => <Home {...props} app={this} />} />
+                <Route exact path='/topup' render={props => <Elements><Topup {...props} app={this} /></Elements>} />
+                <Route exact path='/create/event' render={props => <CreateEvent {...props} app={this} />} />
+                <Route exact path='/events/:id' render={props => <Event {...props} app={this} />} />
+                <Route exact path='/events/:id/ask' render={props => <CreateOffer {...props} app={this} type='ask' />} />
+                <Route exact path='/events/:id/bid' render={props => <CreateOffer {...props} app={this} type='bid' />} />
+                <Route component={NotFound} />
+              </Switch>
             </main>
           </div>
           <footer className='blog-footer mt-5'>
