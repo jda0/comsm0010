@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { injectStripe, CardElement } from 'react-stripe-elements'
 
 class Topup extends Component {
   constructor (props) {
@@ -14,25 +15,51 @@ class Topup extends Component {
   }
 
   handleSubmit (event) {
-    // if (this.state.tcsCheck) {
-    //   fetch(`https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/events`, {
-    //     ...this.props.app.FETCH_PARAMS,
-    //     method: 'POST',
-    //     headers: {
-    //       ...this.props.app.FETCH_PARAMS.headers,
-    //       'Authorization': `Bearer ${this.props.app.state.id_token}`
-    //     }
-    //   })
-    //     .then(x => x.json().then(x => {
-    //       console.log(x)
-    //       this.setState({
-    //         event: x.Item,
-    //         askAmount: 50,
-    //         bidAmount: 50
-    //       })
-    //     }))
-    //     .catch(x => console.error('error', x))
-    // }
+    let amount = parseFloat(this.state.priceInput)
+    if (isNaN(amount)) {
+      // @ts-ignore
+      document.getElementById('priceInput').setCustomValidity('')
+      return
+    }
+
+    if (this.state.tcsCheck) {
+      this.setState({ processing: true, error: undefined, success: undefined })
+      
+      this.props.stripe.createToken({ name: 'Takon.me Account Topup' })
+        .then(({ token }) => {
+          fetch(`https://eozp8bius7.execute-api.eu-west-1.amazonaws.com/test/funds`, {
+            ...this.props.app.FETCH_PARAMS,
+            method: 'POST',
+            headers: {
+              ...this.props.app.FETCH_PARAMS.headers,
+              'Authorization': `Bearer ${this.props.app.state.id_token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              charge: {
+                amount,
+                currency: 'gbp'
+              },
+              token: {
+                id: token.id
+              }
+            })
+          })
+            .then(x => x.json().then(x => {
+              console.log(x)
+              if (x.errorMessage) this.setState({ processing: undefined, error: true })
+              else this.setState({ processing: undefined, complete: true })
+            }))
+            .catch(x => {
+              this.setState({ processing: undefined, error: true })
+              console.error('error', x)
+            })
+        })
+        .catch(x => {
+          this.setState({ processing: undefined, error: true })
+          console.error('error', x)
+        })
+    }
 
     event.preventDefault()
   }
@@ -69,6 +96,12 @@ class Topup extends Component {
                 </div>
               </div>
             </div>
+            <div className='form-group row'>
+              <label htmlFor='priceInput' className='col-sm-3 col-form-label'>Billing Information</label>
+              <div className='col-sm-9'>
+                <CardElement className='form-control' />
+              </div>
+            </div>
             <div className='form-group row form-check my-4'>
               <div className='col-sm-9 offset-sm-3 custom-control custom-checkbox'>
                 <input type='checkbox' className='custom-control-input' id='tcsCheck' checked={this.state.tcsCheck} onChange={this.handleChange} required />
@@ -77,11 +110,32 @@ class Topup extends Component {
                 </label>
               </div>
             </div>
-            <div className='form-group row justify-content-end'>
-              <div className='col-auto'>
-                <button type='submit' className='btn btn-primary'>Confirm</button>
+            {(this.state.processing && (
+              <div className='row'>
+                <div className='col-sm-9 offset-sm-3'>
+                  <div className='spinner dark' />
+                </div>
               </div>
-            </div>
+            )) || (
+              <div className='form-group row justify-content-end'>
+                { (this.state.complete && (
+                  <div className='offset-sm-3 col'>
+                    <div className='alert alert-success'>
+                      Transaction successful.
+                    </div>
+                  </div>
+                )) || (this.state.error && (
+                  <div className='offset-sm-3 col'>
+                    <div className='alert alert-danger'>
+                      There was an error.
+                    </div>
+                  </div>
+                )) }
+                <div className='col-auto'>
+                  <button type='submit' className='btn btn-primary'>Confirm</button>
+                </div>
+              </div>
+            )}
           </form>
         ) }
       </div>
@@ -89,4 +143,4 @@ class Topup extends Component {
   }
 }
 
-export default Topup
+export default injectStripe(Topup)
