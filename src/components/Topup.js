@@ -25,7 +25,7 @@ class Topup extends Component {
 
     if (this.state.tcsCheck) {
       this.setState({ processing: true, error: undefined, success: undefined })
-      
+
       this.props.stripe.createToken({ name: 'Takon.me Account Topup' })
         .then(({ token }) => {
           fetch(`${this.props.app.API_URL}/funds`, {
@@ -73,7 +73,7 @@ class Topup extends Component {
     event.preventDefault()
   }
 
-  componentDidMount () { 
+  componentDidMount () {
     fetch(`${this.props.app.API_URL}/users/me`, {
       ...this.props.app.FETCH_PARAMS,
       headers: {
@@ -112,7 +112,7 @@ class Topup extends Component {
             <div className='form-group row'>
               <label className='col-sm-3 col-form-label'>Your Balance</label>
               <div className='col mb-4'>
-                <h3>£{(this.props.app.state.user.funds * .01).toFixed(2)}</h3>
+                <h3>£{(this.props.app.state.user.funds * 0.01).toFixed(2)}</h3>
               </div>
               {/* {(this.props.app.state.user.funds > 0) && (
                 <div className='col-auto mb-2'>

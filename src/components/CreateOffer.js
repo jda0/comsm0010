@@ -152,12 +152,14 @@ class CreateOffer extends Component {
   render () {
     return (
       <div>
-        { this.state.redirect && this.state.offer.ticket && this.props.type.toLowerCase === 'bid' && (<Redirect push to='/me' />) }
-        { this.state.redirect && (<Redirect push to={`/events/${this.state.event.id}`} />) }
+        {
+          (this.state.redirect && this.state.offer.ticket && this.props.type.toLowerCase === 'bid' && (<Redirect push to='/me' />)) ||
+          (this.state.redirect && (<Redirect push to={`/events/${this.state.event.id}`} />))
+        }
         <h1 className='text-center my-5'>Create {/[aeiou]/i.test(this.props.type[0]) ? 'an' : 'a'} {this.props.type.toTitleCase()}</h1>
         { (!this.props.app.state.user && (
           <div className='alert alert-secondary'>
-            You need to <a href={this.props.app.AUTH_SERVER + 'login' + this.props.app.AUTH_QUERY + `&state=${this.props.location.pathname}`}>Login</a> or <a href={this.props.app.AUTH_SERVER + 'signup' + this.props.app.AUTH_QUERY + `&state=${this.props.location.pathname}`}>Sign up</a> to create an event.
+            You need to <a href={this.props.app.AUTH_SERVER + 'login' + this.props.app.AUTH_QUERY + `&state=${this.props.location.pathname}`}>Login</a> or <a href={this.props.app.AUTH_SERVER + 'signup' + this.props.app.AUTH_QUERY + `&state=${this.props.location.pathname}`}>Sign up</a> to create an offer.
           </div>
         )) || (
           <form onSubmit={this.handleSubmit}>
@@ -218,7 +220,7 @@ class CreateOffer extends Component {
                       { (parseFloat(this.state.priceInput) > 0) && (
                         <span className='text-muted'>
                         Once you click create, your {this.props.type.toLowerCase()} will
-                        immediately be added to the market and you'll be debited £{this.props.type.toLowerCase() === 'bid' ? (parseFloat(this.state.priceInput) || 71.50).toFixed(2) : `${((parseFloat(this.state.priceInput, 2) || 71.50) * 0.15).toFixed(2)}. This is necessary to prevent fraud on our platform and will be either refunded when your ask is settled, used for cancellation fees or confiscated if your ask is found to be fraudulent`}.
+                        immediately be added to the market and you'll be debited £{this.props.type.toLowerCase() === 'bid' ? (parseFloat(this.state.priceInput) || 71.50).toFixed(2) : `${((parseFloat(this.state.priceInput) || 71.50) * 0.15).toFixed(2)}. This is necessary to prevent fraud on our platform and will be either refunded when your ask is settled, used for cancellation fees or confiscated if your ask is found to be fraudulent`}.
                         Cancellation of this {this.props.type.toLowerCase()} is subject to a fee of
                         £{((this.state.priceInput || 71.50) * 0.15).toFixed(2)}, and
                         is not possible once fulfilled by a
@@ -235,14 +237,14 @@ class CreateOffer extends Component {
                   { this.state.error && (
                     <div className='offset-sm-3 col'>
                       <div className='alert alert-danger'>
-                        There was an error{(this.state.error === 2 && ' creating your tickets, but your event was created successfully') || (this.state.errorMessage === 'ItemNotFound' && ': no best offer exists to reserve')}.
+                        There was an error.
                       </div>
                     </div>
                   )}
                   { this.state.success && (
                     <div className='offset-sm-3 col'>
                       <div className='alert alert-success'>
-                        Creation successful {this.state.offer.ticket ? `(Ticket ${this.state.offer.ticket.id})` : `(Order ${this.state.offer.order})`}. 'Redirecting...'
+                        Creation successful {this.state.offer.ticket ? `(Ticket ${this.state.offer.ticket.id})` : `(Order ${this.state.offer.order})`}. Redirecting...
                       </div>
                     </div>
                   )}

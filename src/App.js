@@ -33,9 +33,9 @@ class App extends Component {
     this.FETCH_PARAMS = {
       method: 'GET',
       mode: 'cors',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
-        'x-api-key': '***REMOVED***' 
+        'x-api-key': '***REMOVED***'
       }
     }
 
