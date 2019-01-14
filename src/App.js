@@ -13,6 +13,7 @@ import CreateEvent from './components/CreateEvent'
 import CreateOffer from './components/CreateOffer'
 import Event from './components/Event'
 import Topup from './components/Topup'
+import User from './components/User'
 import NotFound from './components/NotFound'
 
 class App extends Component {
@@ -104,6 +105,7 @@ class App extends Component {
               <Switch>
                 <Route exact path='/' render={props => <Home {...props} app={this} />} />
                 <Route exact path='/topup' render={props => <Elements><Topup {...props} app={this} /></Elements>} />
+                <Route exact path='/me' render={props => <User {...props} app={this} />} />
                 <Route exact path='/create/event' render={props => <CreateEvent {...props} app={this} />} />
                 <Route exact path='/events/:id' render={props => <Event {...props} app={this} />} />
                 <Route exact path='/events/:id/ask' render={props => <CreateOffer {...props} app={this} type='ask' />} />

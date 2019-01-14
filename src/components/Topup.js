@@ -73,6 +73,32 @@ class Topup extends Component {
     event.preventDefault()
   }
 
+  componentDidMount () { 
+    fetch(`${this.props.app.API_URL}/users/me`, {
+      ...this.props.app.FETCH_PARAMS,
+      headers: {
+        ...this.props.app.FETCH_PARAMS.headers,
+        'Authorization': `Bearer ${this.props.app.state.id_token}`
+      }
+    })
+      .then(x => x.json().then(x => {
+        console.log(x)
+        this.setState({
+          user: {
+            funds: 0,
+            ...x
+          }
+        })
+      }))
+      .catch(x => {
+        console.error('error', x)
+        this.props.cookies.remove('id_token', {
+          path: '/'
+        })
+        this.setState({ id_token: undefined })
+      })
+  }
+
   render () {
     return (
       <div>
