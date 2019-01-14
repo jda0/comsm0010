@@ -71,7 +71,7 @@ class Event extends Component {
                 <Link to={`/events/${this.state.event.id}/ask`} className='td-n'>
                   <div className='text-danger card-body d-flex flex-column align-items-center justify-content-center'>
                     <h2 className='display-4 my-0'>Ask</h2>
-                    {(!!this.state.bids && !!(Object.keys(this.state.bids)[0]) && (<span>Sell Now <em>for up to</em> £{-(Object.keys(this.state.bids)[0] * 0.01).toFixed(2)}</span>)) || (<span>Make an offer</span>)}
+                    {(!!this.state.bids && !!(Object.keys(this.state.bids)[0]) && (<span>Sell Now <em>for up to</em> £{(-(Object.keys(this.state.bids)[0] * 0.01)).toFixed(2)}</span>)) || (<span>Make an offer</span>)}
                   </div>
                 </Link>
               </div>
@@ -109,14 +109,14 @@ class Event extends Component {
           { !!this.state.bids && !!(Object.keys(this.state.bids)[0]) && (
               <div className='card mb-4 shadow-sm'>
                 <ul className='list-group list-group-flush'>
-                  <li className='list-group-item text-center d-flex justify-content-around'>
+                  <li className='list-group-item text-center'>
                     <h5 className='mb-0'>Current Bids</h5>
                   </li>
                   { Object.keys(this.state.bids)
                       .sort((a, b) => a - b)
                       .map(x => (
                         <li className='list-group-item text-center d-flex justify-content-around'>
-                          <span>£{-(x * 0.01).toFixed(2)}</span>
+                          <span>£{(-x * 0.01).toFixed(2)}</span>
                           <span>{this.state.bids[x]}</span>
                         </li>
                       ))
@@ -129,7 +129,7 @@ class Event extends Component {
             { !!this.state.asks && !!(Object.keys(this.state.asks)[0]) && (
               <div className='card mb-4 shadow-sm'>
                 <ul className='list-group list-group-flush'>
-                  <li className='d-md-none list-group-item text-center d-flex justify-content-around'>
+                  <li className='list-group-item text-center'>
                     <h5 className='mb-0'>Current Asks</h5>
                   </li>
                   { Object.keys(this.state.asks)

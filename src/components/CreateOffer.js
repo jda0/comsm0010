@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Redirect } from 'react-router'
 import { DateTime as DT } from 'luxon'
 
 class CreateOffer extends Component {
@@ -10,6 +11,7 @@ class CreateOffer extends Component {
     this.handleChange = this.handleChange.bind(this)
     this.handleReserve = this.handleReserve.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.holdReservation = this.holdReservation.bind(this)
   }
 
   componentDidMount () {
@@ -27,60 +29,136 @@ class CreateOffer extends Component {
 
   handleChange (event) {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value
-    this.setState({ [event.target.id]: value })
+    this.setState({ [event.target.id]: value, invalidateReservation: true })
+  }
+
+  holdReservation () {
+    if (this.state.error || this.state.invalidateReservation) {
+      this.setState({ invalidateReservation: undefined })
+      return
+    }
+
+    fetch(`${this.props.app.API_URL}/events/${this.state.eventid}/offers/reserve`, {
+      ...this.props.app.FETCH_PARAMS,
+      method: 'POST',
+      headers: {
+        ...this.props.app.FETCH_PARAMS.headers,
+        'Authorization': `Bearer ${this.props.app.state.id_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: this.props.type.toLowerCase()
+      })
+    })
+      .then(x => x.json())
+      .then(x => {
+        console.log(x)
+        if (x.errorMessage) {
+          this.setState({ processing: undefined, error: 1, errorMessage: x.errorMessage })
+          return
+        }
+
+        this.setState({
+          reserved: {
+            ...x,
+            offer: x.offer,
+            pending: false
+          },
+          priceInput: Math.abs(parseInt(x.offer) * 0.01),
+          processing: undefined
+        })
+
+        if (this.props.type === 'bid') {
+          this.setState({
+            ticketIdInput: x.ticketid
+          })
+        }
+
+        setTimeout(this.holdReservation, 60000)
+      })
+      .catch(x => {
+        console.error('rerror', x)
+        this.setState({ processing: undefined })  
+      })
   }
 
   handleReserve (event) {
-    console.log('reserve')
-    this.setState({ reserved: {} })
-    const afterTimeout = () => {
-      this.setState({
-        reserved: {
-          pending: false,
-          id: 1,
-          price: 49
-        },
-        priceInput: 49
-      })
-
-      if (this.props.type === 'bid') {
-        this.setState({
-          ticketIdInput: 1
-        })
-      }
-    }
-    setTimeout(afterTimeout, 2000)
+    this.setState({ processing: true, error: undefined, invalidateReservation: undefined })
+    this.holdReservation()
     event.preventDefault()
     event.stopPropagation()
   }
 
   handleSubmit (event) {
-    // if (this.state.tcsCheck) {
-    //   fetch(`${this.props.app.API_URL}/events`, {
-    //     ...this.props.app.FETCH_PARAMS,
-    //     method: 'POST',
-    //     headers: {
-    //       ...this.props.app.FETCH_PARAMS.headers,
-    //       'Authorization': `Bearer ${this.props.app.state.id_token}`
-    //     }
-    //   })
-    //     .then(x => x.json().then(x => {
-    //       console.log(x)
-    //       this.setState({
-    //         event: x.Item,
-    //         askAmount: 50,
-    //         bidAmount: 50
-    //       })
-    //     }))
-    //     .catch(x => console.error('error', x))
-    // }
+    let price = parseFloat(this.state.priceInput)
+
+    if (isNaN(price)) {
+      // @ts-ignore
+      document.getElementById('priceInput').setCustomValidity('')
+      return
+    }
+
+    if (this.state.tcsCheck) {
+      this.setState({ processing: true, error: undefined, success: undefined })
+      
+      fetch(`${this.props.app.API_URL}/events/${this.state.eventid}/offers`, {
+        ...this.props.app.FETCH_PARAMS,
+        method: 'POST',
+        headers: {
+          ...this.props.app.FETCH_PARAMS.headers,
+          'Authorization': `Bearer ${this.props.app.state.id_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          quantity: 1,
+          type: this.props.type,
+          ticketIds: [this.state.ticketIdInput],
+          offer: Math.floor(price * 100)
+        })
+      })
+        .then(x => x.json())
+        .then(x => {
+          console.log(x)
+
+          if (x.errorMessage) {
+            this.setState({ processing: undefined, error: 1, errorMessage: x.errorMessage })
+            return
+          }
+
+          this.setState({
+            processing: undefined,
+            success: true,
+            offer: x.Items[0]
+          })
+
+          this.props.app.setState({
+            user: {
+              ...this.props.app.state.user,
+              funds: parseFloat(x.user.funds)
+            }
+          })
+
+          setTimeout(() => this.setState({ redirect: true }), 2000)
+        })
+        .catch(x => {
+          console.error('error', x)
+          this.setState({ processing: undefined, error: 1 })
+        })
+    }
 
     event.preventDefault()
   }
 
   render () {
+    
+    if (this.redirect && this.state.offer.order) return (
+      <Redirect to={`/events/${this.state.event.id}`} />
+    )
+
     return (
       <div>
+        { this.state.redirect && this.state.offer.ticket && ( <Redirect push to='/me' /> ) }
+        { this.state.redirect && this.state.offer.order && ( <Redirect push to={`/events/${this.state.event.id}`} /> ) }
         <h1 className='text-center my-5'>Create {/[aeiou]/i.test(this.props.type[0]) ? 'an' : 'a'} {this.props.type.toTitleCase()}</h1>
         { (!this.props.app.state.user && (
           <div className='alert alert-secondary'>
@@ -145,20 +223,34 @@ class CreateOffer extends Component {
                       { (parseFloat(this.state.priceInput) > 0) && (
                         <span className='text-muted'>
                         Once you click create, your {this.props.type.toLowerCase()} will
-                        immediately be added to the market and you'll be debited £{this.props.type.toLowerCase() === 'bid' ? (parseFloat(this.state.priceInput, 2) || 71.50).toFixed(2) : `${((parseFloat(this.state.priceInput, 2) || 71.50) * 0.15).toFixed(2)}. This is necessary to prevent fraud on our platform and will be either refunded when your ask is settled, used for cancellation fees or confiscated if your ask is found to be fraudulent`}.
+                        immediately be added to the market and you'll be debited £{this.props.type.toLowerCase() === 'bid' ? (parseFloat(this.state.priceInput) || 71.50).toFixed(2) : `${((parseFloat(this.state.priceInput, 2) || 71.50) * 0.15).toFixed(2)}. This is necessary to prevent fraud on our platform and will be either refunded when your ask is settled, used for cancellation fees or confiscated if your ask is found to be fraudulent`}.
                         Cancellation of this {this.props.type.toLowerCase()} is subject to a fee of
                         £{((this.state.priceInput || 71.50) * 0.15).toFixed(2)}, and
                         is not possible once fulfilled by a
                         corresponding {this.props.type.toLowerCase() === 'ask' ? 'bid' : 'ask'}.
                         The {this.props.type.toLowerCase()} may be fulfilled immediately
                         if a corresponding {this.props.type.toLowerCase() === 'ask' ? 'bid' : 'ask'} already
-                        exists. {this.props.type.toLowerCase() === 'ask' && `You'll receive £${((parseFloat(this.state.priceInput, 2) || 71.50) * 1.05).toFixed(2)} after processing fees when your ask is fulfilled, inclusive of your refund of £${((this.state.priceInput || 71.50) * 0.15).toFixed(2)}.`}
+                        exists. {this.props.type.toLowerCase() === 'ask' && `You'll receive £${((parseFloat(this.state.priceInput) || 71.50) * 1.05).toFixed(2)} after processing fees when your ask is fulfilled, inclusive of your refund of £${((this.state.priceInput || 71.50) * 0.15).toFixed(2)}.`}
                         </span>
                       )}
                     </label>
                   </div>
                 </div>
                 <div className='form-group row justify-content-end'>
+                  { this.state.error && (
+                    <div className='offset-sm-3 col'>
+                      <div className='alert alert-danger'>
+                        There was an error{(this.state.error === 2 && ' creating your tickets, but your event was created successfully') || (this.state.errorMessage === 'ItemNotFound' && ': no best offer exists to reserve')}.
+                      </div>
+                    </div>
+                  )}
+                  { this.state.success && (
+                    <div className='offset-sm-3 col'>
+                      <div className='alert alert-success'>
+                        Creation successful {this.state.offer.ticket ? `(Ticket ${this.state.offer.ticket.id})` : `(Order ${this.state.offer.order})`}. Redirecting...
+                      </div>
+                    </div>
+                  )}
                   <div className='col-auto'>
                     <button type='submit' className='btn btn-primary'>Create</button>
                   </div>

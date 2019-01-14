@@ -57,7 +57,7 @@ class CreateEvent extends Component {
     date = date.plus({ hours: time.hour, minutes: time.minute })
 
     if (this.state.tcsCheck) {
-      this.setState({ processing: true })
+      this.setState({ processing: true, error: undefined, success: undefined })
 
       fetch(`${this.props.app.API_URL}/events`, {
         ...this.props.app.FETCH_PARAMS,
@@ -75,13 +75,20 @@ class CreateEvent extends Component {
           description: this.state.descriptionInput || '',
           location: this.state.locationInput,
           admins: [],
-          maxOrderQty: 1
+          maxOrderQty: 1,
+
+          quantity: tickets,
+          offer: Math.floor(price * 100)
         })
       })
-        .then(x => x.json()).then(x => {
+        .then(x => x.json())
+        .then(x => {
           console.log(x)
+
           if (x.errorMessage) {
-            this.setState({ processing: undefined, error: true })
+            if (x.invoked) this.setState({ error: 2 })
+            else this.setState({ processing: undefined, error: 1 })
+
             return
           }
 
@@ -90,6 +97,8 @@ class CreateEvent extends Component {
             success: true,
             event: x.id
           })
+
+          setTimeout(() => this.setState({ redirect: true }), 2000)
         })
         .catch(x => console.error('error', x))
     }
@@ -99,7 +108,7 @@ class CreateEvent extends Component {
     return (
       <div>
         <h1 className='text-center my-5'>Create an Event</h1>
-        { (this.state.event) && (
+        { this.state.redirect && this.state.event && (
           <Redirect push to={`/events/${this.state.event}`} />
         ) }
         { ((!this.props.app.state.user) && (
@@ -193,14 +202,14 @@ class CreateEvent extends Component {
                   { this.state.error && (
                     <div className='offset-sm-3 col'>
                       <div className='alert alert-danger'>
-                        There was an error.
+                        There was an error {this.state.error === 2 && 'creating your tickets, but your event was created successfully.'}.
                       </div>
                     </div>
                   )}
                   { this.state.success && (
                     <div className='offset-sm-3 col'>
                       <div className='alert alert-success'>
-                        Creation successful.
+                        Creation successful. Redirecting...
                       </div>
                     </div>
                   )}
