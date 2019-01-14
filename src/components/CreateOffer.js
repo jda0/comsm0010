@@ -78,7 +78,7 @@ class CreateOffer extends Component {
       })
       .catch(x => {
         console.error('rerror', x)
-        this.setState({ processing: undefined })  
+        this.setState({ processing: undefined })
       })
   }
 
@@ -100,7 +100,7 @@ class CreateOffer extends Component {
 
     if (this.state.tcsCheck) {
       this.setState({ processing: true, error: undefined, success: undefined })
-      
+
       fetch(`${this.props.app.API_URL}/events/${this.state.eventid}/offers`, {
         ...this.props.app.FETCH_PARAMS,
         method: 'POST',
@@ -150,15 +150,10 @@ class CreateOffer extends Component {
   }
 
   render () {
-    
-    if (this.redirect && this.state.offer.order) return (
-      <Redirect to={`/events/${this.state.event.id}`} />
-    )
-
     return (
       <div>
-        { this.state.redirect && this.state.offer.ticket && ( <Redirect push to='/me' /> ) }
-        { this.state.redirect && this.state.offer.order && ( <Redirect push to={`/events/${this.state.event.id}`} /> ) }
+        { this.state.redirect && this.state.offer.ticket && this.props.type.toLowerCase === 'bid' && (<Redirect push to='/me' />) }
+        { this.state.redirect && (<Redirect push to={`/events/${this.state.event.id}`} />) }
         <h1 className='text-center my-5'>Create {/[aeiou]/i.test(this.props.type[0]) ? 'an' : 'a'} {this.props.type.toTitleCase()}</h1>
         { (!this.props.app.state.user && (
           <div className='alert alert-secondary'>
@@ -247,7 +242,7 @@ class CreateOffer extends Component {
                   { this.state.success && (
                     <div className='offset-sm-3 col'>
                       <div className='alert alert-success'>
-                        Creation successful {this.state.offer.ticket ? `(Ticket ${this.state.offer.ticket.id})` : `(Order ${this.state.offer.order})`}. Redirecting...
+                        Creation successful {this.state.offer.ticket ? `(Ticket ${this.state.offer.ticket.id})` : `(Order ${this.state.offer.order})`}. 'Redirecting...'
                       </div>
                     </div>
                   )}
