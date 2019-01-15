@@ -96,8 +96,7 @@ class CreateOffer extends Component {
   }
 
   handleReserve (event) {
-    this.setState({ processing: true, error: undefined, invalidateReservation: undefined })
-    this.holdReservation()
+    this.setState({ processing: true, error: undefined, invalidateReservation: undefined }, this.holdReservation)
     event.preventDefault()
     event.stopPropagation()
   }
