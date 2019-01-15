@@ -16,15 +16,22 @@ class CreateOffer extends Component {
 
   componentDidMount () {
     fetch(`${this.props.app.API_URL}/events/${this.state.eventid}`, this.props.app.FETCH_PARAMS)
-      .then(x => x.json().then(x => {
-        // console.log(x)
+      .then(x => x.json())
+      .then(event => {
+      // console.log(x)
         this.setState({
-          event: x,
-          askAmount: 50,
-          bidAmount: 50
+          event
         })
-      }))
-      .catch(x => console.error('error', x))
+
+        if (Object.keys(event).length === 0) {
+          this.setState({ error: 'no such event exists' })
+          Promise.reject(new Error('NoSuchEvent'))
+        }
+      })
+      .catch(x => {
+        this.setState({ error: x })
+        console.error('error', x)
+      })
   }
 
   handleChange (event) {
@@ -54,7 +61,13 @@ class CreateOffer extends Component {
       .then(x => {
         console.log(x)
         if (x.errorMessage) {
-          this.setState({ processing: undefined, error: 1, errorMessage: x.errorMessage })
+          this.setState({
+            processing: undefined,
+            error: 1,
+            errorMessage: (x.errorMessage === 'ItemNotFound'
+              ? 'could not find a corresponding best offer to reserve'
+              : x.errorMessage)
+          })
           return
         }
 
@@ -78,7 +91,7 @@ class CreateOffer extends Component {
       })
       .catch(x => {
         console.error('rerror', x)
-        this.setState({ processing: undefined })
+        this.setState({ processing: undefined, error: 1, errorMessage: x })
       })
   }
 
@@ -99,7 +112,7 @@ class CreateOffer extends Component {
     }
 
     if (this.state.tcsCheck) {
-      this.setState({ processing: true, error: undefined, success: undefined })
+      this.setState({ processing: true, error: undefined, success: undefined, invalidateReservation: true })
 
       fetch(`${this.props.app.API_URL}/events/${this.state.eventid}/offers`, {
         ...this.props.app.FETCH_PARAMS,
@@ -142,7 +155,7 @@ class CreateOffer extends Component {
         })
         .catch(x => {
           console.error('error', x)
-          this.setState({ processing: undefined, error: 1 })
+          this.setState({ processing: undefined, error: 1, errorMessage: x })
         })
     }
 
@@ -153,7 +166,7 @@ class CreateOffer extends Component {
     return (
       <div>
         {
-          (this.state.redirect && this.state.offer.ticket && this.props.type.toLowerCase === 'bid' && (<Redirect push to='/me' />)) ||
+          (this.state.redirect && this.state.offer.ticket && (this.props.type.toLowerCase() === 'bid') && (<Redirect push to='/me' />)) ||
           (this.state.redirect && (<Redirect push to={`/events/${this.state.event.id}`} />))
         }
         <h1 className='text-center my-5'>Create {/[aeiou]/i.test(this.props.type[0]) ? 'an' : 'a'} {this.props.type.toTitleCase()}</h1>
@@ -237,7 +250,7 @@ class CreateOffer extends Component {
                   { this.state.error && (
                     <div className='offset-sm-3 col'>
                       <div className='alert alert-danger'>
-                        There was an error.
+                        There was an error{this.state.errorMessage && `: ${this.state.errorMessage}`}.
                       </div>
                     </div>
                   )}

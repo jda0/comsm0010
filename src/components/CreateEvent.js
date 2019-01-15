@@ -86,7 +86,7 @@ class CreateEvent extends Component {
           console.log(x)
 
           if (x.errorMessage) {
-            if (x.invoked) this.setState({ error: 2 })
+            if (x.invoked) this.setState({ processing: undefined, error: 2 })
             else this.setState({ processing: undefined, error: 1 })
 
             return
@@ -202,7 +202,7 @@ class CreateEvent extends Component {
                   { this.state.error && (
                     <div className='offset-sm-3 col'>
                       <div className='alert alert-danger'>
-                        There was an error {this.state.error === 2 && 'creating your tickets, but your event was created successfully.'}.
+                        There was an error{this.state.error === 2 && ' creating your tickets, but your event was created successfully.'}.
                       </div>
                     </div>
                   )}

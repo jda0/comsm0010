@@ -39,8 +39,10 @@ exports.addEvent = function (event, context) {
           'body-json': {
             'event': id,
             'offer': event['body-json'].offer,
-            'user': username,
             'quantity': event['body-json'].quantity
+          },
+          'context': {
+            'user': username
           }
         })
       }
@@ -49,7 +51,7 @@ exports.addEvent = function (event, context) {
         if (error) {
           context.fail(error)
         } else {
-          context.succeed(data)
+          context.succeed({ invoked: true, id, ...JSON.parse(data.Payload) })
         }
       })
     }

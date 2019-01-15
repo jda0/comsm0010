@@ -11,6 +11,7 @@ class Home extends Component {
   }
 
   componentDidMount () {
+    this.setState({ processing: true })
     fetch(this.props.app.API_URL + '/events', this.props.app.FETCH_PARAMS)
       .then(x => x.json())
       .then(x => {
@@ -19,7 +20,8 @@ class Home extends Component {
           events: {
             ...this.state.events,
             ...x.reduce((a, b) => { return { ...a, [b.id]: b } }, {})
-          }
+          },
+          processing: undefined
         })
       })
       .then(() => fetch(`${this.props.app.API_URL}/offers?eventids=${encodeURIComponent(Object.keys(this.state.events).join(','))}`, this.props.app.FETCH_PARAMS))
@@ -35,7 +37,10 @@ class Home extends Component {
           }
         }))
       })
-      .catch(x => console.error('error', x))
+      .catch(x => {
+        console.error('error', x)
+        this.setState({ processing: undefined })
+      })
   }
 
   render () {
@@ -60,6 +65,10 @@ class Home extends Component {
 
         </div>
         <div className='row mb-2 mt-4'>
+          {this.state.processing && (
+            <div className='spinner dark' />
+          )}
+
           {Object.values(this.state.events).map(ev => (
             <div className='col-md-4' key={ev.id}>
               <Link to={`/events/${ev.id}`} className='td-n'>

@@ -11,6 +11,8 @@ class User extends Component {
   }
 
   componentDidMount () {
+    this.setState({ processing: true })
+
     fetch(`${this.props.app.API_URL}/users/me/tickets`, {
       ...this.props.app.FETCH_PARAMS,
       headers: {
@@ -28,7 +30,8 @@ class User extends Component {
           },
           events: {
             ...x.reduce((a, b) => { return { ...a, [b.event]: {} } }, {})
-          }
+          },
+          processing: undefined
         })
       })
       .then(() => Promise.all(
@@ -46,7 +49,10 @@ class User extends Component {
             .catch(x => console.error('error', x))
           )
       ))
-      .catch(x => console.error('error', x))
+      .catch(x => {
+        console.error('error', x)
+        this.setState({ error: x, processing: undefined })
+      })
   }
 
   render () {
@@ -70,6 +76,7 @@ class User extends Component {
           ) }
         </div>
         <div className='row mb-2 mt-4'>
+          {this.state.processing && (<div className='spinner dark' />)}
           {Object.values(this.state.tickets).map(tkt => (
             <div className='col-md-4' key={tkt.id}>
               <Link to={`/events/${tkt.event}`} className='td-n'>
