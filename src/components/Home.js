@@ -84,8 +84,8 @@ class Home extends Component {
                   </div>
                   <ul className='list-group list-group-flush'>
                     <li className='list-group-item'>
-                      { !!ev.ask && (<span className='text-success'>ASK&nbsp;<strong>£{(ev.ask * 0.01).toFixed(2)}</strong>&emsp;</span>) }
-                      { !!ev.bid && (<span className='text-danger'>BID&nbsp;<strong>£{(ev.bid * 0.01).toFixed(2)}</strong></span>) }
+                      { typeof ev.ask === 'number' && (<span className='text-success'>ASK&nbsp;<strong>£{(ev.ask * 0.01).toFixed(2)}</strong>&emsp;</span>) }
+                      { typeof ev.bid === 'number' && (<span className='text-danger'>BID&nbsp;<strong>£{(ev.bid * 0.01).toFixed(2)}</strong></span>) }
                     </li>
                   </ul>
                 </div>

@@ -30,7 +30,7 @@ class Event extends Component {
       .then(x => x.json())
       .then(offers => {
         const amounts = Object.keys(offers).map(parseFloat).sort((a, b) => a - b)
-        const asks = amounts.filter(x => x > 0).reduce((a, b) => { return { ...a, [b]: offers[b] } }, {})
+        const asks = amounts.filter(x => x >= 0).reduce((a, b) => { return { ...a, [b]: offers[b] } }, {})
         const bids = amounts.filter(x => x < 0).reduce((a, b) => { return { ...a, [b]: offers[b] } }, {})
 
         this.setState({
@@ -87,7 +87,7 @@ class Event extends Component {
                     <Link to={`/events/${this.state.event.id}/ask`} className='td-n'>
                       <div className='text-danger card-body d-flex flex-column align-items-center justify-content-center'>
                         <h2 className='display-4 my-0'>Ask</h2>
-                        {(!!this.state.bids && !!(Object.keys(this.state.bids)[0]) && (<span>Sell Now <em>for up to</em> £{(-(Object.keys(this.state.bids)[0] * 0.01)).toFixed(2)}</span>)) || (<span>Make an offer</span>)}
+                        {(!!this.state.bids && !!(Object.keys(this.state.bids)[0]) && (<span>Sell Now <em>for up to</em> £{(-(parseInt(Object.keys(this.state.bids)[0]) * 0.01)).toFixed(2)}</span>)) || (<span>Make an offer</span>)}
                       </div>
                     </Link>
                   </div>
@@ -106,7 +106,7 @@ class Event extends Component {
                     <Link to={`/events/${this.state.event.id}/bid`} className='td-n'>
                       <div className='text-success card-body d-flex flex-column align-items-center justify-content-center'>
                         <h2 className='display-4 my-0'>Bid</h2>
-                        {(!!this.state.bids && !!(Object.keys(this.state.asks)[0]) && (<span>Buy Now <em>from</em> £{(Object.keys(this.state.asks)[0] * 0.01).toFixed(2)}</span>)) || (<span>Make an offer</span>)}
+                        {(!!this.state.bids && !!(Object.keys(this.state.asks)[0]) && (<span>Buy Now <em>from</em> £{(parseInt(Object.keys(this.state.asks)[0]) * 0.01).toFixed(2)}</span>)) || (<span>Make an offer</span>)}
                       </div>
                     </Link>
                   </div>
@@ -129,10 +129,10 @@ class Event extends Component {
                         <h5 className='mb-0'>Current Bids</h5>
                       </li>
                       { Object.keys(this.state.bids)
-                        .sort((a, b) => a - b)
+                        .sort((a, b) => parseInt(a) - parseInt(b))
                         .map(x => (
                           <li className='list-group-item text-center d-flex justify-content-around'>
-                            <span>£{(-x * 0.01).toFixed(2)}</span>
+                            <span>£{(-parseInt(x) * 0.01).toFixed(2)}</span>
                             <span>{this.state.bids[x]}</span>
                           </li>
                         ))
@@ -149,10 +149,10 @@ class Event extends Component {
                         <h5 className='mb-0'>Current Asks</h5>
                       </li>
                       { Object.keys(this.state.asks)
-                        .sort((a, b) => a - b)
+                        .sort((a, b) => parseInt(a) - parseInt(b))
                         .map(x => (
                           <li className='list-group-item d-flex justify-content-around'>
-                            <span>£{(x * 0.01).toFixed(2)}</span>
+                            <span>£{(parseInt(x) * 0.01).toFixed(2)}</span>
                             <span>{this.state.asks[x]}</span>
                           </li>
                         ))
